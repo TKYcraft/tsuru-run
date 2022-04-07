@@ -1,0 +1,11 @@
+version: "3" # composeファイルのバージョン
+services:
+  go:
+    container_name: "tsuru-run"
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile # Dockerfileの場所
+      target: dev # devステージをターゲットとする
+    volumes:
+      - ./app:/go/src/app # マウントするディレクトリ
+    # entrypoint: "tail -f /dev/null"
