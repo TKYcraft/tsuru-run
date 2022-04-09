@@ -112,12 +112,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		// Find the channel that the message came from.
 		c, err := findChannel(s, m.ChannelID)
 		if err != nil {
-			return
-		}
-
-		// Find the guild for that channel.
-		//g, err := findChannel(s, c.guildID)
-		if err != nil {
+			elog.Printf("Could not find the channel that the message came from.\n")
 			return
 		}
 
@@ -126,8 +121,6 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				if c_message_channelID[c.GuildID] == nil || len(c_message_channelID[c.GuildID]) == 0 || contains(c_message_channelID[c.GuildID], m.ChannelID) {
 					c_message_channelID[c.GuildID] = append(c_message_channelID[c.GuildID], m.ChannelID)
 				}
-
-				// log.Printf("c_message_channelID[%s]:%s", c.GuildID, c_message_channelID[c.GuildID])
 
 				channelID, err := findVChannel_withUser(s, m.Author.ID, c.GuildID)
 				if err != nil {
@@ -138,20 +131,24 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				sendReply(s, "tsuru.runを実行!", m.Reference())
 
 			case "airhorn":
+				// func化したい
 				if c_voice_channelVC[c.GuildID] == nil{
 					sendReply(s, "tsuru-runはどこのボイスチャンネルにも居ないよ。", m.Reference())
-					elog.Printf("BOT does not exist on any channel")
+					elog.Printf("BOT does not exist on any channels.\n")
 					return
 				}
+
 				go sendVoice(c_voice_channelVC[c.GuildID], "/go_usr/file/airhorn.dca")
 				sendReply(s, "airhorrrrrrrrn", m.Reference())
 
 			case "exit":
+				// func化したい
 				if c_voice_channelVC[c.GuildID] == nil{
 					sendReply(s, "tsuru-runはどこのボイスチャンネルにも居ないよ。", m.Reference())
-					elog.Printf("BOT does not exist on any channel")
+					elog.Printf("BOT does not exist on any channels.\n")
 					return
 				}
+
 				sendReply(s, "ばいばい。", m.Reference())
 				exitVoiceChannel(c.GuildID)
 		}
@@ -163,6 +160,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 func onGuildCreate(s *discordgo.Session, event *discordgo.GuildCreate) {
 
 	if event.Guild.Unavailable {
+		elog.Printf("Guild is unavailable.")
 		return
 	}
 
@@ -198,6 +196,7 @@ func findGuild(s *discordgo.Session, guildID string) (*discordgo.Guild, error) {
 func findVChannel_withUser(s *discordgo.Session, userID string, guildId string) (string, error) {
 	g, err := findGuild(s, guildId)
 	if err != nil{
+		elog.Printf("Could not find channel with user.\n")
 		return "", err
 	}
 
@@ -207,7 +206,7 @@ func findVChannel_withUser(s *discordgo.Session, userID string, guildId string) 
 		}
 	}
 
-	return "", errors.New("Could not find Channel with user.")
+	return "", errors.New("Could not find channel with user.")
 }
 
 // スライスに文字列が含まれるか
@@ -240,9 +239,9 @@ func sendReply(s *discordgo.Session, msg string, reference *discordgo.MessageRef
 
 // 指定のギルドの指定のボイスチャンネルへ所属する
 func enterVoiceChannel(s *discordgo.Session, guildID string, channelID string) {
-	log.Printf("c_voice_channelVC[%s]:%s", guildID, c_voice_channelVC[guildID])
+	log.Printf("c_voice_channelVC[%s]:%s\n", guildID, c_voice_channelVC[guildID])
 	if c_voice_channelVC[guildID] != nil && c_voice_channelVC[guildID].ChannelID == channelID {
-		elog.Printf("すでにボイスチャンネルに所属している可能性あり")
+		elog.Printf("すでにボイスチャンネルに所属している可能性あり\n")
 		return
 	}
 
@@ -267,6 +266,7 @@ func enterVoiceChannel(s *discordgo.Session, guildID string, channelID string) {
 // 指定のギルドのボイスチャンネルから離脱
 func exitVoiceChannel(guildID string) {
 	if c_voice_channelVC[guildID] == nil {
+		elog.Printf("c_voice_channelVC is nil.\n")
 		return
 	}
 
@@ -288,16 +288,18 @@ func exitVoiceChannel(guildID string) {
 func sendVoice(vc *discordgo.VoiceConnection, dca_path string){
 	// ボイスコネクションが存在するか確認
 	if vc == nil {
-		elog.Printf("VoiceConnection is nil.")
+		elog.Printf("VoiceConnection is nil.\n")
 		return
 	}
+
 	err := loadSound(dca_path)
 	if err != nil {
-		elog.Printf("Error loading sound: %s", dca_path)
+		elog.Printf("Error loading sound: %s\n", dca_path)
+		return
 	}
+
 	playSound(vc)
 }
-
 
 // pathからサウンドをロードし、bufferへ
 func loadSound(path string) error {
