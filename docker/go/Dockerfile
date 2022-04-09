@@ -6,27 +6,33 @@ RUN apk update && apk --no-cache add git && \
     apk --no-cache add vim
 
 # ディレクトリの作成
-RUN mkdir /go/app
-
-# 使用しているパッケージのインストール
-# RUN go install github.com/bwmarrin/discordgo@latest
+RUN mkdir -p /go_usr/app/src /go_usr/app/build
 
 # ワーキングディレクトリの設定
-WORKDIR /go/app
+WORKDIR /go_usr/app
+
+RUN go mod init TKYcraft/tsuru-run
+
+# 使用しているパッケージのインストール
+RUN --mount=type=cache,target=${GOPATH}/src \
+    go get github.com/bwmarrin/discordgo
+# RUN go get github.com/bwmarrin/dgvoice
 
 # ホストのファイルをコンテナの作業ディレクトリに移行
-COPY ./app /go/app
+COPY ./app/src /go_usr/app/src
 
 # buildを超えてキャッシュを保持し、ファイルが変更されていなければキャッシュの利用ができる
-RUN --mount=type=cache,target=~/.cache/go-build \
+RUN --mount=type=cache,target=/.cache/go-build \
     CGO_ENABLED=0 \
-    go build -installsuffix cgo -o main.build main.go
+    go build -installsuffix cgo -o build/main.build src/main.go
 
 # 実行ファイルのみの環境
 FROM gcr.io/distroless/static as dev
 
-# ビルド用の環境から実行ファイルのみをコピー
-COPY --from=builder /go/app/main.build /go/main.build
+COPY ./app/file /go_usr/file
+
+# ビルド用の環境から実行ファイルをコピー
+COPY --from=builder /go_usr/app/build/main.build /go_usr/app/build/main.build
 
 # 実行
-CMD [ "/go/main.build" ]
+ENTRYPOINT  [ "/go_usr/app/build/main.build" ]

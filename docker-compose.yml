@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: ./docker/go/Dockerfile # Dockerfileの場所
       target: dev # devステージをターゲットとする
-    volumes:
-      - ./app:/go/src/app # マウントするディレクトリ
-    # entrypoint: "tail -f /dev/null"
+    image: tsuru-run_go
+    env_file:
+      - ./docker/go/.env
+    # tty: true
