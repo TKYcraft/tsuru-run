@@ -10,7 +10,8 @@
 
 ## 起動方法(Docker コンテナの起動)
 
-Docker 及び docker compose が使用できる状態で、`run.bat`もしくは`run.sh`を実行することで起動する。
+1. `.env`ファイルを`Docker/go`直下に作成し、`DISCORD_TOKEN`と`PREFIX`を指定する。
+1. Docker 及び docker compose が使用できる状態で、`run.bat`もしくは`run.sh`を実行することで起動する。
 
 ## 操作方法
 
