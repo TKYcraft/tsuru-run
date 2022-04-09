@@ -43,7 +43,7 @@ func init() {
 	}
 }
 
-// 再生する音源のバッファー
+// 再生する音源のバッファー(現状は複数guildに対応していない)
 var buffer = make([][]byte, 0)
 
 func main() {
