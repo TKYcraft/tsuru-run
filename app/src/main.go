@@ -9,7 +9,6 @@ import (
 	"strings"
 	"syscall"
 	"errors"
-	"time" // sleep用
 	"log" // 標準log
 
 	"github.com/bwmarrin/discordgo"
@@ -126,9 +125,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				if err != nil {
 					return
 				}
-				enterVoiceChannel(s, c.GuildID, channelID)
-
-				sendReply(s, "tsuru.runを実行!", m.Reference())
+				go sendReply(s, "tsuru.runを実行!", m.Reference())
+				go enterVoiceChannel(s, c.GuildID, channelID)
 
 			case "airhorn":
 				// func化したい
@@ -239,7 +237,6 @@ func sendReply(s *discordgo.Session, msg string, reference *discordgo.MessageRef
 
 // 指定のギルドの指定のボイスチャンネルへ所属する
 func enterVoiceChannel(s *discordgo.Session, guildID string, channelID string) {
-	log.Printf("c_voice_channelVC[%s]:%s\n", guildID, c_voice_channelVC[guildID])
 	if c_voice_channelVC[guildID] != nil && c_voice_channelVC[guildID].ChannelID == channelID {
 		elog.Printf("すでにボイスチャンネルに所属している可能性あり\n")
 		return
@@ -253,9 +250,6 @@ func enterVoiceChannel(s *discordgo.Session, guildID string, channelID string) {
 		enterVoiceChannel(s, guildID, channelID)
 		return
 	}
-
-	// 実際にコネクションが確率されるまでの間sleepをかける。(時間は適当)
-	time.Sleep(250 * time.Millisecond)
 
 	// 保持しているコネクションをfunc外から取得できるようにグローバル変数へ
 	c_voice_channelVC[guildID] = vc
