@@ -17,6 +17,7 @@ import (
 
 var elog *log.Logger
 var DISCORD_TOKEN = os.Getenv("DISCORD_TOKEN")
+var PREFIX = os.Getenv("PREFIX")
 
 // IDのみをstringで管理
 var c_message_channelID = map[string][]string{}
@@ -100,8 +101,6 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
-
-	PREFIX := os.Getenv("PREFIX")
 
 	// check if the message is PREFIX
 	if strings.HasPrefix(m.Content, PREFIX) {
