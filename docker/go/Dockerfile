@@ -2,7 +2,7 @@
 FROM golang:1.18-alpine as builder
 
 # go installにgitを使っているようなのでadd
-RUN apk update && apk --no-cache add git vim
+RUN apk update && apk --no-cache add git
 
 # ディレクトリの作成
 RUN mkdir -p /go_usr/app/src /go_usr/app/build
