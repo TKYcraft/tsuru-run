@@ -17,5 +17,7 @@
 
 - tsuru.run
   - 接続
-- tsuru.dc
+- tsuru.airhorn
+  - エアホーンSEを再生
+- tsuru.exit
   - 切断
