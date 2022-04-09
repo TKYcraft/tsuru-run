@@ -1,3 +1,4 @@
 @echo on
-docker compose up --build
+docker compose down
+docker compose up --build --force-recreate
 docker compose down
