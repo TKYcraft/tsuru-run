@@ -55,7 +55,7 @@ func main() {
 		return
 	}
 
-	// onRadyをradyのコールバック関数として登録
+	// onReadyをreadyのコールバック関数として登録
 	dg.AddHandler(onReady)
 
 	// messageCreateをmessageCreateのコールバック関数として登録
