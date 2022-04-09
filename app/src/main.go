@@ -34,12 +34,12 @@ func init() {
 
 	// .envが存在しないもしくは、.env内にDISCORD_TOKENが存在しません。
 	if DISCORD_TOKEN == ""{
-		panic("DISCORD_TOKEN not found in env")
+		panic("DISCORD_TOKEN is not found in env.")
 	}
 
 	// .envが存在しないもしくは、.env内にPREFIXが存在しません。
 	if os.Getenv("PREFIX") == ""{
-		panic("PREFIX not found in env")
+		panic("PREFIX is not found in env")
 	}
 }
 
