@@ -10,8 +10,10 @@ import (
 	"syscall"
 	"errors"
 	"log" // 標準log
+	"path/filepath" // ファイルパスからファイル名を取得するために使ってる
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/bwmarrin/dgvoice"
 )
 
 var eLog *log.Logger
@@ -42,9 +44,6 @@ func init() {
 		panic("PREFIX is not found in env")
 	}
 }
-
-// 再生する音源のバッファー(現状は複数guildに対応していない)
-var buffer = make([][]byte, 0)
 
 func main() {
 	// Create a new Discord session using the provided bot token.
@@ -139,6 +138,19 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				go sendVoice(cVoiceChannelVC[c.GuildID], "/go_usr/file/airhorn.dca")
 				sendReply(s, "airhorrrrrrrrn", m.Reference())
 
+			case "play":
+				// func化したい
+				if cVoiceChannelVC[c.GuildID] == nil{
+					sendReply(s, "tsuru-runはどこのボイスチャンネルにも居ないよ。", m.Reference())
+					eLog.Printf("BOT does not exist on any channels.\n")
+					return
+				}
+
+				path := "/go_usr/file/chino_and_cocoa.mp3"
+				go playAudioFile(cVoiceChannelVC[c.GuildID], path)
+
+				sendReply(s, "play:" + path, m.Reference())
+
 			case "exit":
 				// func化したい
 				if cVoiceChannelVC[c.GuildID] == nil{
@@ -149,6 +161,11 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 				sendReply(s, "ばいばい。", m.Reference())
 				exitVoiceChannel(c.GuildID)
+
+			case "debug":
+				fmt.Printf(strings.Join(dirwalk("/usr/bin"), "\n"))
+				fmt.Printf(strings.Join(dirwalk("/go_usr/file"), "\n"))
+
 		}
 	}
 
@@ -278,7 +295,7 @@ func exitVoiceChannel(guildID string) {
 }
 
 
-// dca音源送信のため、loadSound()及びplaySoundの呼び出し
+// dca音源送信のため、loadSound()及びplaySound()の呼び出し
 func sendVoice(vc *discordgo.VoiceConnection, dca_path string){
 	// ボイスコネクションが存在するか確認
 	if vc == nil {
@@ -286,22 +303,24 @@ func sendVoice(vc *discordgo.VoiceConnection, dca_path string){
 		return
 	}
 
-	err := loadSound(dca_path)
+	buffer, err := loadSound(dca_path)
 	if err != nil {
 		eLog.Printf("Error loading sound: %s\n", dca_path)
 		return
 	}
 
-	playSound(vc)
+	playSound(vc, buffer)
 }
 
 // pathからサウンドをロードし、bufferへ
-func loadSound(path string) error {
+func loadSound(path string) ([][]byte, error) {
+	// 再生する音源のバッファー(現状は複数guildに対応していない)
+	var buffer = make([][]byte, 0)
 	// ファイルパスが有効か確認
 	file, err := os.Open(path)
 	if err != nil {
 		eLog.Println("Error opening dca file :", err)
-		return err
+		return buffer, err
 	}
 
 	var opuslen int16
@@ -314,14 +333,14 @@ func loadSound(path string) error {
 		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			err := file.Close()
 			if err != nil {
-				return err
+				return buffer, err
 			}
-			return nil
+			return buffer, err
 		}
 
 		if err != nil {
 			eLog.Println("Error reading from dca file :", err, "\nfile path:", path)
-			return err
+			return buffer, err
 		}
 
 		// Read encoded pcm from dca file.
@@ -331,16 +350,17 @@ func loadSound(path string) error {
 		// Should not be any end of file errors
 		if err != nil {
 			eLog.Println("Error reading from dca file :", err, "\nfile path:", path)
-			return err
+			return buffer, err
 		}
 
 		// Append encoded pcm data to the buffer.
 		buffer = append(buffer, InBuf)
 	}
+	return buffer, err
 }
 
 // bufferから音源を再生
-func playSound(vc *discordgo.VoiceConnection) {
+func playSound(vc *discordgo.VoiceConnection, buffer [][]byte) {
 	// Speakingを有効化
 	vc.Speaking(true)
 
@@ -351,4 +371,41 @@ func playSound(vc *discordgo.VoiceConnection) {
 
 	// Speakingを無効化
 	vc.Speaking(false)
+}
+
+// Takes inbound audio and sends it right back out.
+func playAudioFile(vc *discordgo.VoiceConnection, fPath string) {
+	// Speakingを有効化
+	vc.Speaking(true)
+
+	// Start loop and attempt to play all files in the given folder
+	fmt.Println("Reading Folder: ", fPath)
+	_, err := os.ReadFile(fPath)
+	if err != nil {
+		eLog.Printf("ファイルの読み込みに失敗しました:%s", fPath)
+		return
+	}
+
+	fmt.Println("PlayAudioFile:", fPath)
+	dgvoice.PlayAudioFile(vc, fPath, make(chan bool))
+
+	// Speakingを無効化
+	vc.Speaking(false)
+}
+
+func dirwalk(dir string) []string {
+    files, err := os.ReadDir(dir)
+    if err != nil {
+        panic(err)
+    }
+
+    var paths []string
+    for _, file := range files {
+        if file.IsDir() {
+            paths = append(paths, dirwalk(filepath.Join(dir, file.Name()))...)
+            continue
+        }
+        paths = append(paths, (filepath.Join(dir, file.Name()) + "\n"))
+    }
+    return paths
 }
