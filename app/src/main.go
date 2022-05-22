@@ -122,6 +122,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 				channelID, err := findVChannel_withUser(s, m.Author.ID, c.GuildID)
 				if err != nil {
+					sendReply(s, "何らかのエラーです。\nBOTはあなたがボイスチャンネルに参加していない可能性を疑っているみたい。", m.Reference())
+					eLog.Printf("BOT seems to have lost track of where the user is\n")
 					return
 				}
 				go sendReply(s, "tsuru.runを実行!", m.Reference())
