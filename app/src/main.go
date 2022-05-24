@@ -294,6 +294,9 @@ func exitVoiceChannel(guildID string) {
 	// 実際に切断
 	cVoiceChannelVC[guildID].Disconnect()
 
+	// 音声の送信も停止されるため、排他処理用のマップからギルドを削除
+	delete(voiceMutex, cVoiceChannelVC[guildID].ChannelID)
+
 	// グローバル変数に存在するコネクションを明示的にnilへ
 	// これがないとコネクションが有効かを毎回確かめる必要あるかも
 	// (どっちみち、コネクションが有効か否かは実装する必要ありそう)
