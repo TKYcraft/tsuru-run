@@ -143,7 +143,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				}
 
 				go sendVoice(cVoiceChannelVC[c.GuildID], "/go_usr/file/airhorn.dca")
-				sendReply(s, "airhorrrrrrrrn", m.Reference())
+				go sendReply(s, "airhorrrrrrrrn", m.Reference())
 
 			case "play":
 				// func化したい
@@ -156,7 +156,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				path := "/go_usr/file/chino_and_cocoa.mp3"
 				go playAudioFile(cVoiceChannelVC[c.GuildID], path)
 
-				sendReply(s, "play:" + path, m.Reference())
+				go sendReply(s, "play:" + path, m.Reference())
 
 			case "exit":
 				// func化したい
@@ -166,7 +166,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					return
 				}
 
-				sendReply(s, "ばいばい。", m.Reference())
+				go sendReply(s, "ばいばい。", m.Reference())
 				exitVoiceChannel(c.GuildID)
 
 			case "debug":
