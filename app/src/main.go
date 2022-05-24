@@ -20,7 +20,7 @@ var eLog *log.Logger
 var DISCORD_TOKEN = os.Getenv("DISCORD_TOKEN")
 var PREFIX = os.Getenv("PREFIX")
 
-// IDのみをstringで管理
+// IDのみをstringで管理(読み上げBOT実装において読み上げ箇所を保持していたことから存在していると思われる,要確認)
 var cMessageChannelID = map[string][]string{}
 
 // VoiceConnectionを保持
