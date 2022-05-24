@@ -11,6 +11,7 @@ import (
 	"errors"
 	"log" // 標準log
 	"path/filepath" // ファイルパスからファイル名を取得するために使ってる
+	"sync"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/bwmarrin/dgvoice"
@@ -25,6 +26,8 @@ var cMessageChannelID = map[string][]string{}
 
 // VoiceConnectionを保持
 var cVoiceChannelVC = map[string]*discordgo.VoiceConnection{}
+
+var voiceMutex = sync.Mutex
 
 func init() {
 	// defaultのLOG設定
@@ -363,6 +366,9 @@ func loadSound(path string) ([][]byte, error) {
 
 // bufferから音源を再生
 func playSound(vc *discordgo.VoiceConnection, buffer [][]byte) {
+	voiceMutex.Lock()
+	defer voiceMutex.Unlock()
+
 	// Speakingを有効化
 	vc.Speaking(true)
 
