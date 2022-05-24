@@ -29,7 +29,6 @@ var cVoiceChannelVC = map[string]*discordgo.VoiceConnection{}
 
 // 音声を流す処理を排他処理化するためのもの
 // voiceMutex[ChannelID].Lock() or .Unlock()
-// typeとして保持
 var voiceMutex = map[string]*sync.Mutex{}
 
 func init() {
