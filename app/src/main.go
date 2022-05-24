@@ -14,7 +14,7 @@ import (
 	"sync"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/bwmarrin/dgvoice"
+	"github.com/bwmarrin/dgvoice" // これを読み込まないように変更する場合はCGO_ENABLEDを変更する必要がありそう
 )
 
 var eLog *log.Logger
@@ -391,6 +391,7 @@ func playSound(vc *discordgo.VoiceConnection, buffer [][]byte) {
 	vc.Speaking(false)
 }
 
+// dgvoice使用
 // Takes inbound audio and sends it right back out.
 func playAudioFile(vc *discordgo.VoiceConnection, fPath string) {
 	// Speakingを有効化
