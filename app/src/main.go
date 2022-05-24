@@ -27,7 +27,10 @@ var cMessageChannelID = map[string][]string{}
 // VoiceConnectionを保持
 var cVoiceChannelVC = map[string]*discordgo.VoiceConnection{}
 
-var voiceMutex = sync.Mutex
+// 音声を流す処理を排他処理化するためのもの
+// voiceMutex[ChannelID].Lock() or .Unlock()
+// typeとして保持
+var voiceMutex = map[string]*sync.Mutex{}
 
 func init() {
 	// defaultのLOG設定
@@ -366,8 +369,15 @@ func loadSound(path string) ([][]byte, error) {
 
 // bufferから音源を再生
 func playSound(vc *discordgo.VoiceConnection, buffer [][]byte) {
-	voiceMutex.Lock()
-	defer voiceMutex.Unlock()
+	// 現在のチャンネルで初めて再生した際に、`Mutex`を使うため初期化
+	if voiceMutex[vc.ChannelID] == nil {
+		voiceMutex[vc.ChannelID] = &sync.Mutex{}
+	}
+
+	// 再生開始前に排他処理をするためロック
+	voiceMutex[vc.ChannelID].Lock()
+	// 終了時にアンロック
+	defer voiceMutex[vc.ChannelID].Unlock()
 
 	// Speakingを有効化
 	vc.Speaking(true)
