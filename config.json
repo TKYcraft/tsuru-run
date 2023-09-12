@@ -1,0 +1,5 @@
+{
+  "debug_log": true,
+  "prefix": "tsuru.",
+  "token": "discord.token"
+}
